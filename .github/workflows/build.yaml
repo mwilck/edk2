@@ -1,0 +1,79 @@
+name: build EDK2
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: update
+        run: sudo apt-get update
+      - name: zip
+        run: >-
+          sudo apt-get install --yes zip
+      - name: create zip file
+        run: >-
+          echo zip -r timberland-ovmf.zip -j
+          Build/OvmfX64/DEBUG_GCC5/FV/OVMF_CODE.fd
+          Build/OvmfX64/DEBUG_GCC5/FV/OVMF_VARS.fd
+          Build/OvmfX64/DEBUG_GCC5/X64/NvmeOfCli.efi
+      - name: checkout sources
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 5
+          submodules: true
+      - name: set release tag from git
+        run: |
+          echo "TAG=${{ github.ref_name }}-g$(git log --oneline -n1 --pretty=%h HEAD~3)" >>$GITHUB_ENV
+      - name: create build.sh
+        run: |
+          cat >build.sh <<EOF
+          . ./edksetup.sh
+          make -j -C BaseTools
+          build -t GCC5 -a X64 -p OvmfPkg/OvmfPkgX64.dsc -D NETWORK_IPV6_ENABLE
+          EOF
+      - name: update
+        run: sudo apt-get update
+      - name: install dependencies
+        run: >-
+          sudo apt-get install --yes
+          g++ uuid-dev iasl openssl python3 unzip make
+          libcunit1-dev libaio-dev libssl-dev ncurses-dev
+          libjson-c-dev meson libnuma-dev autoconf automake
+          libtool help2man nasm zip
+      - name: build OVMF
+        run: bash build.sh
+      - name: have a look
+        run: ls Build/OvmfX64/DEBUG_GCC5/FV
+      - name: create zip file
+        run: >-
+          echo zip -r timberland-ovmf.zip -j
+          Build/OvmfX64/DEBUG_GCC5/FV/OVMF_CODE.fd
+          Build/OvmfX64/DEBUG_GCC5/FV/OVMF_VARS.fd
+          Build/OvmfX64/DEBUG_GCC5/X64/NvmeOfCli.efi
+      - name: create zip file
+        run: >-
+          zip -r timberland-ovmf.zip -j
+          Build/OvmfX64/DEBUG_GCC5/FV/OVMF_CODE.fd
+          Build/OvmfX64/DEBUG_GCC5/FV/OVMF_VARS.fd
+          Build/OvmfX64/DEBUG_GCC5/X64/NvmeOfCli.efi
+      - name: create release
+        uses: actions/create-release@v1
+        id: create_release
+        env:
+          GITHUB_TOKEN: "${{ github.token }}"
+        with:
+          draft: false
+          prerelease: false
+          release_name: "Release ${{ env.TAG }}"
+          tag_name: "${{ env.TAG }}"
+          body: |
+            This is an automated release
+      - name: upload artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: "${{ github.token }}"
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: timberland-ovmf.zip
+          asset_name: timberland-ovmf-${{ env.TAG }}.zip
+          asset_content_type: application/zip
