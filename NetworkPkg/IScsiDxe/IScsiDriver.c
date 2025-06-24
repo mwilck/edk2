@@ -1165,10 +1165,7 @@ IScsiStop (
   //
   IScsiRemoveNic (IScsiController);
 
-  //
-  // Update the iSCSI Boot Firmware Table.
-  //
-  IScsiPublishIbft ();
+  // DO NOT update the iSCSI Boot Firmware Table here.
 
   if (Private->Session != NULL) {
     IScsiSessionAbort (Private->Session);
