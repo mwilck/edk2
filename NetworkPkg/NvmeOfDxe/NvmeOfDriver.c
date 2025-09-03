@@ -1490,15 +1490,6 @@ NvmeOfStop (
   // Remove NIC to be done once only. Comes back for IPv6 binding, hence error ignored.
   NvmeOfRemoveNic (NvmeOfController);
 
-  //
-  // Uninstall the NBFT from ACPI tables, but only during DXE.
-  // This is effectively a workaround for iPXE driver, which
-  // closes its UNDI/SNP protocols during ExitBootServices().
-  //
-  if (!gDriverInRuntime) {
-    NvmeOfPublishNbft (FALSE);
-  }
-
   NET_LIST_FOR_EACH_SAFE (Entry, NextEntryProcessed, &CtrlrInfo->CliCtrlrList) {
     CtrlrInfoData =
       NET_LIST_USER_STRUCT (Entry, NVMEOF_CLI_CTRL_MAPPING, CliCtrlrList);
