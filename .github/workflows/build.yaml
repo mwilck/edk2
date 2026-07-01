@@ -35,11 +35,11 @@ jobs:
           cat >build.sh <<EOF
           . ./edksetup.sh
           make -j -C BaseTools
-          build -t GCC5 -a X64 -p OvmfPkg/OvmfPkgX64.dsc -D NETWORK_IPV6_ENABLE
-          sha256sum -b Build/OvmfX64/DEBUG_GCC5/FV/OVMF_CODE.fd \
-              Build/OvmfX64/DEBUG_GCC5/FV/OVMF_VARS.fd \
-              Build/OvmfX64/DEBUG_GCC5/X64/NvmeOfCli.efi \
-              Build/OvmfX64/DEBUG_GCC5/X64/VConfig.efi \
+          build -t GCC -a X64 -p OvmfPkg/OvmfPkgX64.dsc -D NETWORK_IPV6_ENABLE
+          sha256sum -b Build/OvmfX64/DEBUG_GCC/FV/OVMF_CODE.fd \
+              Build/OvmfX64/DEBUG_GCC/FV/OVMF_VARS.fd \
+              Build/OvmfX64/DEBUG_GCC/X64/NvmeOfCli.efi \
+              Build/OvmfX64/DEBUG_GCC/X64/VConfig.efi \
               > checksum.sha256
           EOF
       - name: update
@@ -56,10 +56,10 @@ jobs:
       - name: create zip file
         run: >-
           zip -r timberland-ovmf.zip -j
-          Build/OvmfX64/DEBUG_GCC5/FV/OVMF_CODE.fd
-          Build/OvmfX64/DEBUG_GCC5/FV/OVMF_VARS.fd
-          Build/OvmfX64/DEBUG_GCC5/X64/NvmeOfCli.efi
-          Build/OvmfX64/DEBUG_GCC5/X64/VConfig.efi
+          Build/OvmfX64/DEBUG_GCC/FV/OVMF_CODE.fd
+          Build/OvmfX64/DEBUG_GCC/FV/OVMF_VARS.fd
+          Build/OvmfX64/DEBUG_GCC/X64/NvmeOfCli.efi
+          Build/OvmfX64/DEBUG_GCC/X64/VConfig.efi
       - name: store artifacts
         uses: actions/upload-artifact@v7
         with:
