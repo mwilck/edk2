@@ -63,6 +63,7 @@ jobs:
       - name: store artifacts
         uses: actions/upload-artifact@v7
         with:
+          name: ovmf-build
           path: |
             timberland-ovmf.zip
             checksum.sha256
@@ -83,6 +84,10 @@ jobs:
     steps:
       - name: download build artifacts
         uses: actions/download-artifact@v8
+        with:
+          name: ovmf-build
+      - name: check download
+        run: ls -lR
       - name: create release notes
         run: |
           cat >relnotes.txt <<EOF
@@ -93,9 +98,9 @@ jobs:
 
           ### SHA256 checksums for binary artifacts:
           EOF
-          sed 's/^/    /' artifact/checksum.sha256 >> relnotes.txt
+          sed 's/^/    /' checksum.sha256 >> relnotes.txt
           echo "### Top commit message:" >> relnotes.txt
-          sed 's/^/    /' artifact/top-commit.txt >> relnotes.txt
+          sed 's/^/    /' top-commit.txt >> relnotes.txt
       - name: create release
         uses: actions/create-release@v1
         id: create_release
@@ -113,6 +118,6 @@ jobs:
           GITHUB_TOKEN: "${{ github.token }}"
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifact/timberland-ovmf.zip
+          asset_path: timberland-ovmf.zip
           asset_name: timberland-ovmf-${{ env.TAG }}.zip
           asset_content_type: application/zip
